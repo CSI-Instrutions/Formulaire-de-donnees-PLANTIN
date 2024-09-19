@@ -1,9 +1,9 @@
-<!DOCTYPE html>  
+<!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Formulaire de Génération de PDF</title>
+    <title>Formulaire de saisie des informations</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -75,43 +75,9 @@
             <label for="ph">Ph:</label>
             <input type="text" id="ph" name="ph" required>
 
-            <button type="button" onclick="generatePDF()">Envoyer</button>
+            <button type="submit">Envoyer</button>
         </form>
     </div>
-
-    <!-- Inclusion de la bibliothèque jsPDF pour générer le PDF -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script>
-        function generatePDF() {
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF();
-
-            // Récupération des valeurs du formulaire
-            const nof = document.getElementById('nof').value;
-            const nproduit = document.getElementById('nproduit').value;
-            const resume = document.getElementById('resume').value;
-            const mp = document.getElementById('mp').value;
-            const volume = document.getElementById('volume').value;
-            const cuve = document.getElementById('cuve').value;
-            const debut = document.getElementById('debut').value;
-            const fin = document.getElementById('fin').value;
-            const ph = document.getElementById('ph').value;
-
-            // Ajout des informations dans le PDF
-            doc.text(`N°OF: ${nof}`, 10, 10);
-            doc.text(`N°Produit: ${nproduit}`, 10, 20);
-            doc.text(`Résumé de fabrication: ${resume}`, 10, 30);
-            doc.text(`Matière Première (MP): ${mp}`, 10, 40);
-            doc.text(`Volume extrait (en l): ${volume}`, 10, 50);
-            doc.text(`Cuve utilisée: ${cuve}`, 10, 60);
-            doc.text(`Date et heure début fabrication: ${debut}`, 10, 70);
-            doc.text(`Date et heure fin fabrication: ${fin}`, 10, 80);
-            doc.text(`Ph: ${ph}`, 10, 90);
-
-            // Téléchargement du PDF
-            doc.save('informations_client.pdf');
-        }
-    </script>
 
 </body>
 </html>
