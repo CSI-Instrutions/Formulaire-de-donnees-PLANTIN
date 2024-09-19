@@ -42,6 +42,12 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script>
         function generatePDF() {
+            // Vérification que la bibliothèque jsPDF est bien chargée
+            if (typeof window.jspdf === 'undefined') {
+                alert("jsPDF non chargé correctement.");
+                return;
+            }
+
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
 
