@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Formulaire de saisie des informations</title>
+    <title>Formulaire de Génération de PDF</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -41,6 +41,23 @@
         button:hover {
             background-color: #218838;
         }
+        .validation-labo-table {
+            width: 100%;
+            margin-top: 10px;
+        }
+        .validation-labo-table th, .validation-labo-table td {
+            padding: 8px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        .add-row-btn {
+            margin-top: 10px;
+            background-color: #007bff;
+            border: none;
+            cursor: pointer;
+            padding: 8px;
+            color: white;
+        }
     </style>
 </head>
 <body>
@@ -57,6 +74,7 @@
             <label for="resume">Résumé de fabrication:</label>
             <textarea id="resume" name="resume" required></textarea>
 
+            <!-- MP Section -->
             <label for="mp">Matière Première (MP):</label>
             <input type="text" id="mp" name="mp" required>
 
@@ -72,12 +90,104 @@
             <label for="fin">Date et heure fin fabrication:</label>
             <input type="datetime-local" id="fin" name="fin" required>
 
-            <label for="ph">Ph:</label>
-            <input type="text" id="ph" name="ph" required>
+            <!-- More fields from the image -->
+            <label for="ph">Ph (Min, Max, Vmes):</label>
+            <input type="text" id="ph" name="ph" placeholder="Min / Max / Vmes" required>
 
-            <button type="submit">Envoyer</button>
+            <label for="densite">Densité (Min, Max, Vmes):</label>
+            <input type="text" id="densite" name="densite" placeholder="Min / Max / Vmes" required>
+
+            <label for="conductivite">Conductivité (Min, Max, Vmes):</label>
+            <input type="text" id="conductivite" name="conductivite" placeholder="Min / Max / Vmes" required>
+
+            <label for="niveau">Niveau cuve (début/fin):</label>
+            <input type="text" id="niveau" name="niveau" placeholder="Début / Fin" required>
+
+            <!-- Validation Labo Section -->
+            <h2>Validation Labo</h2>
+            <table class="validation-labo-table" id="validationLaboTable">
+                <tr>
+                    <th>Date et heure</th>
+                    <th>Contrôle effectué</th>
+                    <th>Valeur mesurée</th>
+                </tr>
+                <tr>
+                    <td><input type="datetime-local" name="validation_date[]"></td>
+                    <td><input type="text" name="validation_controle[]"></td>
+                    <td><input type="text" name="validation_valeur[]"></td>
+                </tr>
+            </table>
+            <button type="button" class="add-row-btn" onclick="addRow()">+ Ajouter une ligne</button>
+
+            <button type="button" onclick="generatePDF()">Envoyer</button>
         </form>
     </div>
+
+    <!-- Inclusion de la bibliothèque jsPDF pour générer le PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script>
+        function addRow() {
+            const table = document.getElementById('validationLaboTable');
+            const row = document.createElement('tr');
+            
+            row.innerHTML = `
+                <td><input type="datetime-local" name="validation_date[]"></td>
+                <td><input type="text" name="validation_controle[]"></td>
+                <td><input type="text" name="validation_valeur[]"></td>
+            `;
+            
+            table.appendChild(row);
+        }
+
+        function generatePDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+
+            // Récupération des valeurs du formulaire
+            const nof = document.getElementById('nof').value;
+            const nproduit = document.getElementById('nproduit').value;
+            const resume = document.getElementById('resume').value;
+            const mp = document.getElementById('mp').value;
+            const volume = document.getElementById('volume').value;
+            const cuve = document.getElementById('cuve').value;
+            const debut = document.getElementById('debut').value;
+            const fin = document.getElementById('fin').value;
+            const ph = document.getElementById('ph').value;
+            const densite = document.getElementById('densite').value;
+            const conductivite = document.getElementById('conductivite').value;
+            const niveau = document.getElementById('niveau').value;
+
+            // Ajout des informations dans le PDF
+            doc.text(`N°OF: ${nof}`, 10, 10);
+            doc.text(`N°Produit: ${nproduit}`, 10, 20);
+            doc.text(`Résumé de fabrication: ${resume}`, 10, 30);
+            doc.text(`Matière Première (MP): ${mp}`, 10, 40);
+            doc.text(`Volume extrait (en l): ${volume}`, 10, 50);
+            doc.text(`Cuve utilisée: ${cuve}`, 10, 60);
+            doc.text(`Date et heure début fabrication: ${debut}`, 10, 70);
+            doc.text(`Date et heure fin fabrication: ${fin}`, 10, 80);
+            doc.text(`Ph (Min/Max/Vmes): ${ph}`, 10, 90);
+            doc.text(`Densité (Min/Max/Vmes): ${densite}`, 10, 100);
+            doc.text(`Conductivité (Min/Max/Vmes): ${conductivite}`, 10, 110);
+            doc.text(`Niveau cuve début/fin: ${niveau}`, 10, 120);
+
+            // Validation labo section
+            const rows = document.querySelectorAll("#validationLaboTable tr");
+            let yOffset = 130;
+            rows.forEach((row, index) => {
+                if (index !== 0) { // Skip header row
+                    const date = row.querySelector('input[name="validation_date[]"]').value;
+                    const controle = row.querySelector('input[name="validation_controle[]"]').value;
+                    const valeur = row.querySelector('input[name="validation_valeur[]"]').value;
+                    doc.text(`Validation Labo - ${index}: Date/heure: ${date}, Contrôle: ${controle}, Valeur: ${valeur}`, 10, yOffset);
+                    yOffset += 10;
+                }
+            });
+
+            // Téléchargement du PDF
+            doc.save('informations_client.pdf');
+        }
+    </script>
 
 </body>
 </html>
