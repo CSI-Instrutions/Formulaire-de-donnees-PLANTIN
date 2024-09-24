@@ -1,596 +1,245 @@
-<!DOCTYPE html> 
+<!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Formulaire de Génération de PDF</title>
+    <title>Formulaire de Suivi de Production Industrielle</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-            background-color: #f9f9f9;
-            color: #333;
-        }
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
-            background-color: #fff;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-        }
-        h1, h2 {
-            color: #333;
-            text-align: center;
-        }
-        .group-title {
-            margin-top: 30px;
-            font-weight: bold;
-            text-align: left;
-            border-bottom: 2px solid #333;
-            padding-bottom: 10px;
-            font-size: 1.2em;
-        }
-        label {
-            display: block;
-            margin: 10px 0 5px;
-            font-weight: bold;
-        }
-        input, textarea {
-            width: 100%;
-            padding: 8px;
-            margin-bottom: 10px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-        }
-        input.error, textarea.error {
-            border-color: red;
-        }
-        .grid-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); /* Ajusté pour de petites cases */
-            gap: 10px;
-        }
-        .grid-container-2 {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 10px;
-        }
-        button {
-            padding: 10px 20px;
-            background-color: #28a745;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            margin-top: 20px;
-        }
-        button:hover {
-            background-color: #218838;
-        }
-        table {
-            width: 100%;
-            margin-top: 10px;
-            border-collapse: collapse;
-        }
-        table, th, td {
-            border: 1px solid #ddd;
-        }
-        th, td {
-            padding: 8px;
-            text-align: left;
-        }
-        .add-row-btn, .remove-row-btn {
-            background-color: #007bff;
-            border: none;
-            cursor: pointer;
-            padding: 8px;
-            color: white;
-            border-radius: 3px;
-        }
-        .remove-row-btn {
-            background-color: #dc3545;
-        }
-        /* Styles pour le modal */
-        .modal {
-            display: none; /* Caché par défaut */
-            position: fixed; /* Reste en place */
-            z-index: 1; /* Au-dessus de tout */
-            left: 0;
-            top: 0;
-            width: 100%; /* Pleine largeur */
-            height: 100%; /* Pleine hauteur */
-            overflow: auto; /* Activation du défilement si nécessaire */
-            background-color: rgba(0,0,0,0.4); /* Fond semi-transparent */
-        }
-        .modal-content {
-            background-color: #fefefe;
-            margin: 15% auto; /* 15% du haut et centré */
-            padding: 20px;
-            border: 1px solid #888;
-            width: 80%; /* Largeur */
-            max-width: 500px;
-            border-radius: 8px;
-            text-align: center;
-            color: red; /* Texte en rouge */
-        }
-        .close {
-            color: #aaa;
-            float: right;
-            font-size: 24px;
-            font-weight: bold;
-            cursor: pointer;
-        }
-        .close:hover,
-        .close:focus {
-            color: black;
-            text-decoration: none;
-        }
+        body { font-family: Arial, sans-serif; line-height: 1.6; }
+        .container { width: 90%; max-width: 800px; margin: 0 auto; padding: 20px; }
+        h1 { text-align: center; color: #333; }
+        h2 { color: #444; border-bottom: 1px solid #ddd; padding-bottom: 10px; }
+        table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        input[type="text"], input[type="number"], input[type="datetime-local"] { width: calc(100% - 10px); padding: 5px; margin-bottom: 5px; }
+        button { background-color: #4CAF50; color: white; padding: 10px 15px; border: none; cursor: pointer; margin-top: 10px; }
+        button:hover { background-color: #45a049; }
+        .error { border: 2px solid red; }
+        #error-message { color: red; margin-bottom: 10px; display: none; }
     </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
 </head>
 <body>
+    <div class="container" id="content-to-save">
+        <h1>Formulaire de Suivi de Production Industrielle</h1>
+        <div id="error-message">Veuillez remplir tous les champs obligatoires avant de générer le PDF.</div>
 
-    <div class="container">
-        <h1>Formulaire de saisie des informations</h1>
-        
-        <!-- Informations Générales -->
-        <div class="group-title">Informations Générales</div>
-        <div class="grid-container-2">
-            <div>
-                <label for="operateur">Nom de l'opérateur:</label>
-                <input type="text" id="operateur" name="operateur" required>
-            </div>
-            <div>
-                <label for="numero_of">Numéro OF:</label>
-                <input type="text" id="numero_of" name="numero_of" required>
-            </div>
-            <div>
-                <label for="numero_produit">Numéro du produit:</label>
-                <input type="text" id="numero_produit" name="numero_produit" required>
-            </div>
-        </div>
+        <h2>Informations Générales</h2>
+        <p>Nom de l'opérateur : <input type="text" id="operator-name"></p>
+        <p>Numéro de l'OF : <input type="text" id="of-number"></p>
+        <p>Numéro du produit : <input type="text" id="product-number"></p>
 
-        <!-- Cuve utilisée -->
-        <div class="group-title">Cuve utilisée</div>
-        <label for="cuve">Cuve utilisée:</label>
-        <input type="text" id="cuve" name="cuve" required>
-        <label for="debut">Date et heure début fabrication:</label>
-        <input type="datetime-local" id="debut" name="debut" required>
-        <label for="fin">Date et heure fin fabrication:</label>
-        <input type="datetime-local" id="fin" name="fin" required>
-        <label for="niveau_cuve_fin">Niveau de la cuve à la fin (en l):</label>
-        <input type="number" id="niveau_cuve_fin" name="niveau_cuve_fin" required>
+        <h2>Cuve Utilisée</h2>
+        <p>Cuve utilisée : <input type="text" id="tank-used"></p>
+        <p>Date et heure de début : <input type="datetime-local" id="start-time"></p>
+        <p>Date et heure de fin : <input type="datetime-local" id="end-time"></p>
+        <p>Niveau de la cuve (L) : <input type="number" id="tank-level"></p>
 
-        <!-- Résumé de fabrication -->
-        <div class="group-title">Résumé de fabrication</div>
-        <div class="grid-container">
-            <div>
-                <label for="volume_mp">Volume MP (en l):</label>
-                <input type="number" id="volume_mp" name="volume_mp" required>
-            </div>
-            <div>
-                <label for="volume_eau">Volume EAU (en l):</label>
-                <input type="number" id="volume_eau" name="volume_eau" required>
-            </div>
-            <div>
-                <label for="volume_lessive">Volume LESSIVE DE POTASSE (en l):</label>
-                <input type="number" id="volume_lessive" name="volume_lessive" required>
-            </div>
-            <div>
-                <label for="volume_acide_nitrique">Volume ACIDE NITRIQUE (en l):</label>
-                <input type="number" id="volume_acide_nitrique" name="volume_acide_nitrique" required>
-            </div>
-            <div>
-                <label for="volume_acide_phosphorique">Volume ACIDE PHOSPHORIQUE (en l):</label>
-                <input type="number" id="volume_acide_phosphorique" name="volume_acide_phosphorique" required>
-            </div>
-            <div>
-                <label for="volume_chlorure">Volume CHLORURE FERRIQUE (en l):</label>
-                <input type="number" id="volume_chlorure" name="volume_chlorure" required>
-            </div>
-            <div>
-                <label for="volume_dpta">Volume DPTA LIQUIDE (en l):</label>
-                <input type="number" id="volume_dpta" name="volume_dpta" required>
-            </div>
-            <div>
-                <label for="volume_caplant">Volume CAPLANT (en l):</label>
-                <input type="number" id="volume_caplant" name="volume_caplant" required>
-            </div>
-            <div>
-                <label for="volume_plantimag">Volume PLANTIMAG (en l):</label>
-                <input type="number" id="volume_plantimag" name="volume_plantimag" required>
-            </div>
-            <div>
-                <label for="volume_vinasse">Volume VINASSE DE BETTERAVE (en l):</label>
-                <input type="number" id="volume_vinasse" name="volume_vinasse" required>
-            </div>
-        </div>
-
-        <!-- Trémie Peseuse -->
-        <div class="group-title">Trémie Peseuse</div>
-        <label for="tremie">Nom de la Trémie:</label>
-        <input type="text" id="tremie" name="tremie" required>
-        <label for="tremie_matiere">Nom matière:</label>
-        <input type="text" id="tremie_matiere" name="tremie_matiere" required>
-        <label for="tremie_volume">Volume extrait (en kg):</label>
-        <input type="number" id="tremie_volume" name="tremie_volume" required>
-
-        <!-- SDI -->
-        <div class="group-title">SDI</div>
-        <label for="sdi">SDI:</label>
-        <input type="text" id="sdi" name="sdi" required>
-        <label for="sdi_matiere">Nom matière:</label>
-        <input type="text" id="sdi_matiere" name="sdi_matiere" required>
-        <label for="sdi_volume">Volume extrait (en l):</label>
-        <input type="number" id="sdi_volume" name="sdi_volume" required>
-
-        <!-- Densité, Conductivité, pH -->
-        <div class="group-title">Densité, Conductivité et pH (Min, Max et Vmes)</div>
-        <div class="grid-container">
-            <div>
-                <label for="densite_min">Densité Min:</label>
-                <input type="number" step="0.01" id="densite_min" name="densite_min" required>
-            </div>
-            <div>
-                <label for="densite_max">Densité Max:</label>
-                <input type="number" step="0.01" id="densite_max" name="densite_max" required>
-            </div>
-            <div>
-                <label for="densite_vmes">Densité Vmes:</label>
-                <input type="number" step="0.01" id="densite_vmes" name="densite_vmes" required>
-            </div>
-            <div>
-                <label for="conductivite">Conductivité (en mS):</label>
-                <input type="number" step="0.01" id="conductivite" name="conductivite" required>
-            </div>
-            <div>
-                <label for="conductivite_vmes">Conductivité Vmes (en mS):</label>
-                <input type="number" step="0.01" id="conductivite_vmes" name="conductivite_vmes" required>
-            </div>
-            <div>
-                <label for="ph_min">pH Min:</label>
-                <input type="number" step="0.01" id="ph_min" name="ph_min" required>
-            </div>
-            <div>
-                <label for="ph_max">pH Max:</label>
-                <input type="number" step="0.01" id="ph_max" name="ph_max" required>
-            </div>
-            <div>
-                <label for="ph_vmes">pH Vmes:</label>
-                <input type="number" step="0.01" id="ph_vmes" name="ph_vmes" required>
-            </div>
-        </div>
-
-        <!-- Incorporation MP Solide -->
-        <div class="group-title">Incorporation MP SOLIDE</div>
-        <table id="mp-solide-table">
-            <thead>
-                <tr>
-                    <th>Code Matière</th>
-                    <th>N° Produit</th>
-                    <th>Quantité ajoutée (kg)</th>
-                    <th>Action</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td><input type="text" name="code_matiere[]" required></td>
-                    <td><input type="text" name="num_produit[]" required></td>
-                    <td><input type="number" step="0.01" name="quantite_ajoutee[]" class="quantite" required></td>
-                    <td><button type="button" class="remove-row-btn" onclick="removeRow(this)">Supprimer</button></td>
-                </tr>
-            </tbody>
+        <h2>Résumé de Fabrication</h2>
+        <table id="manufacturing-summary">
+            <tr>
+                <th>Nom de la Matière Première</th>
+                <th>Volume Extrait (L)</th>
+            </tr>
+            <tr><td>MP (Matière Première)</td><td><input type="number" class="volume-input"></td></tr>
+            <tr><td>Eau</td><td><input type="number" class="volume-input"></td></tr>
+            <tr><td>Lessive</td><td><input type="number" class="volume-input"></td></tr>
+            <tr><td>Acide Nitrique</td><td><input type="number" class="volume-input"></td></tr>
+            <tr><td>DPTA Liquide</td><td><input type="number" class="volume-input"></td></tr>
+            <tr><td>Caplant</td><td><input type="number" class="volume-input"></td></tr>
+            <tr><td>Plantimag</td><td><input type="number" class="volume-input"></td></tr>
+            <tr><td>Vinasse</td><td><input type="number" class="volume-input"></td></tr>
+            <tr><td>Acide Phosphorique</td><td><input type="number" class="volume-input"></td></tr>
+            <tr><td>Chlorure Ferrique</td><td><input type="number" class="volume-input"></td></tr>
         </table>
-        <button type="button" class="add-row-btn" onclick="addRow()">Ajouter une ligne</button>
-        <div>
-            <strong>Total (kg):</strong> <span id="total-quantite">0</span>
-        </div>
 
-        <!-- Validation Labo -->
-        <div class="group-title">Validation Labo</div>
-        <table id="validation-labo-table">
-            <thead>
-                <tr>
-                    <th>Date</th>
-                    <th>Heure</th>
-                    <th>Contrôle effectué</th>
-                    <th>Valeur mesurée</th>
-                    <th>Action</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td><input type="date" name="date_controle[]" required></td>
-                    <td><input type="time" name="heure_controle[]" required></td>
-                    <td><input type="text" name="controle_effectue[]" required></td>
-                    <td><input type="number" step="0.01" name="valeur_mesuree[]" required></td>
-                    <td><button type="button" class="remove-row-btn" onclick="removeRow(this)">Supprimer</button></td>
-                </tr>
-            </tbody>
+        <h2>pH Mesuré</h2>
+        <p>pH Min : <input type="number" id="ph-min" step="0.1"></p>
+        <p>pH Max : <input type="number" id="ph-max" step="0.1"></p>
+        <p>pH Mesuré : <input type="number" id="ph-measured" step="0.1"></p>
+
+        <h2>Conductivité Mesurée</h2>
+        <p>Conductivité Mesurée (mS) : <input type="number" id="conductivity" step="0.1"></p>
+
+        <h2>Densité Mesurée</h2>
+        <p>Densité Min : <input type="number" id="density-min" step="0.001"></p>
+        <p>Densité Max : <input type="number" id="density-max" step="0.001"></p>
+        <p>Densité Mesurée : <input type="number" id="density-measured" step="0.001"></p>
+
+        <h2>Incorporation MP Solide</h2>
+        <table id="solid-mp-table">
+            <tr>
+                <th>Nom de la Matière</th>
+                <th>Code</th>
+                <th>Quantité Ajoutée (kg)</th>
+                <th>Actions</th>
+            </tr>
         </table>
-        <button type="button" class="add-row-btn" onclick="addRowValidation()">Ajouter une ligne</button>
+        <button onclick="addSolidMPRow()">Ajouter une ligne</button>
+        <p>Total Quantité (kg) : <span id="total-quantity">0</span></p>
 
-        <button type="button" onclick="handleSubmit()">Envoyer</button>
+        <h2>Validation Labo</h2>
+        <table id="lab-validation-table">
+            <tr>
+                <th>Date et Heure</th>
+                <th>Contrôle Effectué</th>
+                <th>Valeur Mesurée</th>
+                <th>Actions</th>
+            </tr>
+        </table>
+        <button onclick="addLabValidationRow()">Ajouter une ligne</button>
     </div>
 
-    <!-- Modal pour afficher les erreurs -->
-    <div id="errorModal" class="modal">
-        <div class="modal-content">
-            <span class="close" onclick="closeModal()">&times;</span>
-            <p id="errorMessage"></p>
-        </div>
-    </div>
+    <button id="downloadButton">Valider et Télécharger</button>
 
-    <!-- Inclusion de la bibliothèque jsPDF pour générer le PDF -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script>
-        // Fonction pour ajouter une ligne dans le tableau "Incorporation MP SOLIDE"
-        function addRow() {
-            const table = document.getElementById('mp-solide-table').getElementsByTagName('tbody')[0];
-            const newRow = table.insertRow();
+        function addSolidMPRow() {
+            const table = document.getElementById('solid-mp-table');
+            const newRow = table.insertRow(-1);
             newRow.innerHTML = `
-                <td><input type="text" name="code_matiere[]" required></td>
-                <td><input type="text" name="num_produit[]" required></td>
-                <td><input type="number" step="0.01" name="quantite_ajoutee[]" class="quantite" required></td>
-                <td><button type="button" class="remove-row-btn" onclick="removeRow(this)">Supprimer</button></td>
+                <td><input type="text"></td>
+                <td><input type="text"></td>
+                <td><input type="number" class="quantity-input" onchange="updateTotalQuantity()"></td>
+                <td><button onclick="this.closest('tr').remove(); updateTotalQuantity();">Supprimer</button></td>
             `;
-            updateTotal();
-            attachQuantityListener(newRow.querySelector('.quantite'));
+            updateTotalQuantity();
         }
 
-        // Fonction pour ajouter une ligne dans le tableau "Validation Labo"
-        function addRowValidation() {
-            const table = document.getElementById('validation-labo-table').getElementsByTagName('tbody')[0];
-            const newRow = table.insertRow();
-            newRow.innerHTML = `
-                <td><input type="date" name="date_controle[]" required></td>
-                <td><input type="time" name="heure_controle[]" required></td>
-                <td><input type="text" name="controle_effectue[]" required></td>
-                <td><input type="number" step="0.01" name="valeur_mesuree[]" required></td>
-                <td><button type="button" class="remove-row-btn" onclick="removeRow(this)">Supprimer</button></td>
-            `;
-        }
-
-        // Fonction pour supprimer une ligne du tableau
-        function removeRow(button) {
-            const row = button.parentElement.parentElement;
-            row.remove();
-            updateTotal();
-        }
-
-        // Fonction pour mettre à jour le total des quantités ajoutées
-        function updateTotal() {
+        function updateTotalQuantity() {
+            const inputs = document.querySelectorAll('.quantity-input');
             let total = 0;
-            const quantities = document.querySelectorAll('.quantite');
-            quantities.forEach(q => {
-                total += parseFloat(q.value) || 0;
+            inputs.forEach(input => {
+                total += Number(input.value) || 0;
             });
-            document.getElementById('total-quantite').innerText = total.toFixed(2);
+            document.getElementById('total-quantity').textContent = total.toFixed(2);
         }
 
-        // Fonction pour attacher l'écouteur d'événement aux nouvelles quantités ajoutées
-        function attachQuantityListener(input) {
-            input.addEventListener('input', updateTotal);
+        function addLabValidationRow() {
+            const table = document.getElementById('lab-validation-table');
+            const newRow = table.insertRow(-1);
+            newRow.innerHTML = `
+                <td><input type="datetime-local"></td>
+                <td><input type="text"></td>
+                <td><input type="text"></td>
+                <td><button onclick="this.closest('tr').remove();">Supprimer</button></td>
+            `;
         }
 
-        // Attacher les écouteurs aux quantités initiales
-        document.querySelectorAll('.quantite').forEach(input => {
-            input.addEventListener('input', updateTotal);
-        });
-
-        // Fonction pour fermer le modal
-        function closeModal() {
-            document.getElementById('errorModal').style.display = "none";
-        }
-
-        // Fonction de validation du formulaire
         function validateForm() {
-            let isValid = true;
-            let missingFields = [];
-
-            // Réinitialiser les styles d'erreur
-            document.querySelectorAll('input, textarea').forEach(field => {
-                field.classList.remove('error');
-            });
-
-            // Sélectionner tous les éléments requis
-            const requiredFields = document.querySelectorAll('input[required], textarea[required]');
-
-            requiredFields.forEach(field => {
-                if (!field.value.trim()) {
-                    isValid = false;
-                    // Ajouter le nom du champ manquant
-                    const label = document.querySelector(`label[for="${field.id}"]`);
-                    const fieldName = label ? label.innerText.replace(':', '') : 'Champ manquant';
-                    missingFields.push(fieldName);
-                    // Mettre en évidence le champ manquant
-                    field.classList.add('error');
+            let valid = true;
+            document.getElementById('error-message').style.display = 'none';
+            const inputs = document.querySelectorAll('input[type="text"], input[type="number"], input[type="datetime-local"]');
+            inputs.forEach(input => {
+                if (!input.value) {
+                    input.classList.add('error');
+                    valid = false;
+                } else {
+                    input.classList.remove('error');
                 }
             });
-
-            if (!isValid) {
-                // Afficher le message d'erreur dans le modal
-                const errorMessage = `Veuillez remplir les champs suivants :\n- ${missingFields.join('\n- ')}`;
-                document.getElementById('errorMessage').innerText = errorMessage;
-                document.getElementById('errorModal').style.display = "block";
+            if (!valid) {
+                document.getElementById('error-message').style.display = 'block';
             }
-
-            return isValid;
+            return valid;
         }
 
-        // Fonction pour gérer la soumission du formulaire
-        function handleSubmit() {
-            if (validateForm()) {
-                generatePDF();
+        document.getElementById('downloadButton').addEventListener('click', function () {
+            if (!validateForm()) {
+                return;
             }
-        }
 
-        // Fonction pour générer le PDF
-        function generatePDF() {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
 
-            let yPosition = 10;
+            doc.setFontSize(16);
+            doc.text('Suivi de Production Industrielle', 10, 10);
 
-            // Title with background
-            doc.setFillColor(230, 230, 230); // Light gray background
-            doc.rect(10, yPosition - 7, 190, 8, 'F'); // Rectangle behind title
-            doc.setFontSize(18);
-            doc.setFont("helvetica", "bold");
-            doc.text("Informations de Fabrication", 105, yPosition, null, null, 'center');
-            yPosition += 10;
+            // Section Informations Générales
+            doc.setFontSize(12);
+            doc.text('Informations Générales', 10, 20);
+            doc.text('Nom de l\'opérateur : ' + document.getElementById('operator-name').value, 10, 30);
+            doc.text('Numéro de l\'OF : ' + document.getElementById('of-number').value, 10, 40);
+            doc.text('Numéro du produit : ' + document.getElementById('product-number').value, 10, 50);
 
-            doc.setFontSize(14);
-            // Informations Générales
-            addSectionTitle(doc, "Informations Générales", yPosition);
-            yPosition += 8;
-            doc.setFont("helvetica", "normal");
-            doc.text(`Nom de l'opérateur: ${document.getElementById('operateur').value}`, 10, yPosition);
-            yPosition += 7;
-            doc.text(`Numéro OF: ${document.getElementById('numero_of').value}`, 10, yPosition);
-            yPosition += 7;
-            doc.text(`Numéro du produit: ${document.getElementById('numero_produit').value}`, 10, yPosition);
-            yPosition += 10;
+            // Section Cuve Utilisée
+            doc.text('Cuve Utilisée', 10, 60);
+            doc.text('Cuve utilisée : ' + document.getElementById('tank-used').value, 10, 70);
+            doc.text('Début : ' + document.getElementById('start-time').value, 10, 80);
+            doc.text('Fin : ' + document.getElementById('end-time').value, 10, 90);
+            doc.text('Niveau de la cuve (L) : ' + document.getElementById('tank-level').value, 10, 100);
 
-            // Cuve utilisée
-            addSectionTitle(doc, "Cuve utilisée", yPosition);
-            yPosition += 8;
-            doc.setFont("helvetica", "normal");
-            doc.text(`Cuve utilisée: ${document.getElementById('cuve').value}`, 10, yPosition);
-            yPosition += 7;
-            doc.text(`Début fabrication: ${document.getElementById('debut').value}`, 10, yPosition);
-            yPosition += 7;
-            doc.text(`Fin fabrication: ${document.getElementById('fin').value}`, 10, yPosition);
-            yPosition += 7;
-            doc.text(`Niveau de la cuve à la fin: ${document.getElementById('niveau_cuve_fin').value} l`, 10, yPosition);
-            yPosition += 10;
-
-            // Résumé de fabrication
-            addSectionTitle(doc, "Résumé de fabrication", yPosition);
-            yPosition += 8;
-            doc.setFont("helvetica", "normal");
-            const resumeFields = [
-                { label: 'Volume MP (en l)', value: document.getElementById('volume_mp').value },
-                { label: 'Volume EAU (en l)', value: document.getElementById('volume_eau').value },
-                { label: 'Volume LESSIVE DE POTASSE (en l)', value: document.getElementById('volume_lessive').value },
-                { label: 'Volume ACIDE NITRIQUE (en l)', value: document.getElementById('volume_acide_nitrique').value },
-                { label: 'Volume ACIDE PHOSPHORIQUE (en l)', value: document.getElementById('volume_acide_phosphorique').value },
-                { label: 'Volume CHLORURE FERRIQUE (en l)', value: document.getElementById('volume_chlorure').value },
-                { label: 'Volume DPTA LIQUIDE (en l)', value: document.getElementById('volume_dpta').value },
-                { label: 'Volume CAPLANT (en l)', value: document.getElementById('volume_caplant').value },
-                { label: 'Volume PLANTIMAG (en l)', value: document.getElementById('volume_plantimag').value },
-                { label: 'Volume VINASSE DE BETTERAVE (en l)', value: document.getElementById('volume_vinasse').value }
-            ];
-
-            resumeFields.forEach(field => {
-                // Split the text if it's too long
-                const splitLabel = doc.splitTextToSize(`${field.label}: ${field.value} l`, 180);
-                doc.text(splitLabel, 10, yPosition);
-                yPosition += 7 * splitLabel.length;
+            // Section Résumé de Fabrication
+            doc.text('Résumé de Fabrication', 10, 110);
+            const volumes = document.querySelectorAll('.volume-input');
+            let y = 120;
+            volumes.forEach((input) => {
+                const row = input.closest('tr');
+                const label = row.cells[0].textContent;
+                doc.text(label + ' : ' + input.value + ' L', 10, y);
+                y += 10;
             });
-            yPosition += 3;
 
-            // Trémie Peseuse
-            addSectionTitle(doc, "Trémie Peseuse", yPosition);
-            yPosition += 8;
-            doc.setFont("helvetica", "normal");
-            doc.text(`Nom de la Trémie: ${document.getElementById('tremie').value}`, 10, yPosition);
-            yPosition += 7;
-            doc.text(`Nom matière: ${document.getElementById('tremie_matiere').value}`, 10, yPosition);
-            yPosition += 7;
-            doc.text(`Volume extrait: ${document.getElementById('tremie_volume').value} kg`, 10, yPosition);
-            yPosition += 10;
+            // Section pH Mesuré
+            doc.text('pH Mesuré', 10, y);
+            y += 10;
+            doc.text('pH Min : ' + document.getElementById('ph-min').value, 10, y);
+            y += 10;
+            doc.text('pH Max : ' + document.getElementById('ph-max').value, 10, y);
+            y += 10;
+            doc.text('pH Mesuré : ' + document.getElementById('ph-measured').value, 10, y);
+            y += 10;
 
-            // SDI
-            addSectionTitle(doc, "SDI", yPosition);
-            yPosition += 8;
-            doc.setFont("helvetica", "normal");
-            doc.text(`SDI: ${document.getElementById('sdi').value}`, 10, yPosition);
-            yPosition += 7;
-            doc.text(`Nom matière: ${document.getElementById('sdi_matiere').value}`, 10, yPosition);
-            yPosition += 7;
-            doc.text(`Volume extrait: ${document.getElementById('sdi_volume').value} l`, 10, yPosition);
-            yPosition += 10;
+            // Section Conductivité Mesurée
+            doc.text('Conductivité Mesurée', 10, y);
+            y += 10;
+            doc.text('Conductivité (mS) : ' + document.getElementById('conductivity').value, 10, y);
+            y += 10;
 
-            // Densité, Conductivité, pH
-            addSectionTitle(doc, "Densité, Conductivité et pH", yPosition);
-            yPosition += 8;
-            doc.setFont("helvetica", "normal");
-            const densiteConductivitePHFields = [
-                { label: 'Densité Min', value: document.getElementById('densite_min').value },
-                { label: 'Densité Max', value: document.getElementById('densite_max').value },
-                { label: 'Densité Vmes', value: document.getElementById('densite_vmes').value },
-                { label: 'Conductivité (mS)', value: document.getElementById('conductivite').value },
-                { label: 'Conductivité Vmes (mS)', value: document.getElementById('conductivite_vmes').value },
-                { label: 'pH Min', value: document.getElementById('ph_min').value },
-                { label: 'pH Max', value: document.getElementById('ph_max').value },
-                { label: 'pH Vmes', value: document.getElementById('ph_vmes').value }
-            ];
+            // Section Densité Mesurée
+            doc.text('Densité Mesurée', 10, y);
+            y += 10;
+            doc.text('Densité Min : ' + document.getElementById('density-min').value, 10, y);
+            y += 10;
+            doc.text('Densité Max : ' + document.getElementById('density-max').value, 10, y);
+            y += 10;
+            doc.text('Densité Mesurée : ' + document.getElementById('density-measured').value, 10, y);
+            y += 10;
 
-            densiteConductivitePHFields.forEach(field => {
-                const splitLabel = doc.splitTextToSize(`${field.label}: ${field.value}`, 180);
-                doc.text(splitLabel, 10, yPosition);
-                yPosition += 7 * splitLabel.length;
+            // Section Incorporation MP Solide
+            doc.text('Incorporation MP Solide', 10, y);
+            y += 10;
+            const rows = document.querySelectorAll('#solid-mp-table tr');
+            rows.forEach((row, index) => {
+                if (index > 0) {
+                    const cells = row.querySelectorAll('input');
+                    const name = cells[0].value || 'N/A';
+                    const code = cells[1].value || 'N/A';
+                    const qty = cells[2].value || '0';
+                    doc.text(`Matière : ${name}, Code : ${code}, Quantité : ${qty} kg`, 10, y);
+                    y += 10;
+                }
             });
-            yPosition += 3;
 
-            // Incorporation MP Solide
-            addSectionTitle(doc, "Incorporation MP SOLIDE", yPosition);
-            yPosition += 8;
-            doc.setFont("helvetica", "normal");
-            const mpTable = document.getElementById('mp-solide-table');
-            const mpRows = mpTable.querySelectorAll('tbody tr');
-            let mpContent = "";
-            mpRows.forEach((row, index) => {
-                const cells = row.querySelectorAll('td input');
-                mpContent += `Ligne ${index + 1} - Code Matière: ${cells[0].value}, N° Produit: ${cells[1].value}, Quantité ajoutée: ${cells[2].value} kg\n`;
+            // Section Validation Labo
+            doc.text('Validation Labo', 10, y);
+            y += 10;
+            const labRows = document.querySelectorAll('#lab-validation-table tr');
+            labRows.forEach((row, index) => {
+                if (index > 0) {
+                    const cells = row.querySelectorAll('input');
+                    const date = cells[0].value || 'N/A';
+                    const control = cells[1].value || 'N/A';
+                    const measured = cells[2].value || 'N/A';
+                    doc.text(`Date : ${date}, Contrôle : ${control}, Mesure : ${measured}`, 10, y);
+                    y += 10;
+                }
             });
-            // Gestion de la longueur du texte et pagination si nécessaire
-            const splitMpContent = doc.splitTextToSize(mpContent, 180);
-            doc.text(splitMpContent, 10, yPosition);
-            yPosition += 7 * splitMpContent.length + 3;
 
-            // Total Quantité
-            doc.setFont("helvetica", "bold");
-            doc.text(`Total Quantité ajoutée (kg): ${document.getElementById('total-quantite').innerText}`, 10, yPosition);
-            yPosition += 10;
-
-            // Validation Labo
-            addSectionTitle(doc, "Validation Labo", yPosition);
-            yPosition += 8;
-            doc.setFont("helvetica", "normal");
-            const validationTable = document.getElementById('validation-labo-table');
-            const validationRows = validationTable.querySelectorAll('tbody tr');
-            let validationContent = "";
-            validationRows.forEach((row, index) => {
-                const cells = row.querySelectorAll('td input');
-                validationContent += `Ligne ${index + 1} - Date: ${cells[0].value}, Heure: ${cells[1].value}, Contrôle effectué: ${cells[2].value}, Valeur mesurée: ${cells[3].value}\n`;
-            });
-            const splitValidationContent = doc.splitTextToSize(validationContent, 180);
-            doc.text(splitValidationContent, 10, yPosition);
-            yPosition += 7 * splitValidationContent.length + 3;
-
-            // Télécharger le PDF
-            doc.save('informations_fabrication.pdf');
-        }
-
-        // Fonction pour ajouter un titre de section avec un fond coloré
-        function addSectionTitle(doc, title, yPos) {
-            doc.setFillColor(200, 200, 200); // Light gray background
-            doc.rect(10, yPos - 7, 190, 8, 'F'); // Rectangle derrière le titre
-            doc.setFontSize(14);
-            doc.setFont("helvetica", "bold");
-            doc.text(title, 10, yPos);
-        }
-
-        // Fermer le modal si l'utilisateur clique en dehors de lui
-        window.onclick = function(event) {
-            const modal = document.getElementById('errorModal');
-            if (event.target == modal) {
-                modal.style.display = "none";
+            const pdfName = prompt("Entrez le nom du fichier PDF", "suivi_production.pdf");
+            if (pdfName) {
+                doc.save(pdfName);
             }
-        }
+        });
     </script>
-
 </body>
 </html>
